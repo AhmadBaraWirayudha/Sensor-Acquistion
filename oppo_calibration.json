@@ -1,0 +1,15 @@
+{
+    "accelerometer": {
+        "sensor": "Accelerometer",
+        "bias_offsets": [
+            0.0,
+            9.8,
+            -9.70665
+        ],
+        "noise_std": [
+            1.4142042122692182,
+            0.0,
+            0.0
+        ]
+    }
+}
