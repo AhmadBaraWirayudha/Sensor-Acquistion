@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp"
+    android:background="#F5F7FA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SensorMax Studio — Oppo A33w"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#1A237E"
+            android:gravity="center"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Status: Ready | Sensors Found: Scanning..."
+            android:textSize="14sp"
+            android:textColor="#333333"
+            android:background="#E8EAF6"
+            android:padding="8dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Transmission Transport Selection -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1. Select Transmission Mode to Laptop:"
+            android:textStyle="bold"
+            android:textColor="#263238"
+            android:layout_marginBottom="4dp"/>
+
+        <RadioGroup
+            android:id="@+id/rgTransport"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/rbWifi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="WiFi (UDP)"
+                android:checked="true"
+                android:layout_weight="1"/>
+
+            <RadioButton
+                android:id="@+id/rbUsb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="USB / ADB"
+                android:layout_weight="1"/>
+
+            <RadioButton
+                android:id="@+id/rbBt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bluetooth"
+                android:layout_weight="1"/>
+        </RadioGroup>
+
+        <!-- Network / Target Config -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <EditText
+                android:id="@+id/etTargetIp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:hint="Laptop IP / BT MAC"
+                android:text="192.168.1.100"
+                android:textSize="14sp"/>
+
+            <EditText
+                android:id="@+id/etTargetPort"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Port"
+                android:text="5005"
+                android:inputType="number"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <!-- Sensitivity & Sampling Configuration -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2. Sensor Sampling & Sensitivity Tuning:"
+            android:textStyle="bold"
+            android:textColor="#263238"
+            android:layout_marginBottom="4dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Speed:"
+                android:gravity="center_vertical"/>
+
+            <Spinner
+                android:id="@+id/spinnerRate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvSensitivityLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dead Zone Delta (Δ threshold): 0.00 (Max Sensitivity)"
+            android:textSize="13sp"/>
+
+        <SeekBar
+            android:id="@+id/seekDelta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvAlphaLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Low-Pass Smoothing (α): 0.00 (Raw Hardware Output)"
+            android:textSize="13sp"/>
+
+        <SeekBar
+            android:id="@+id/seekAlpha"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="95"
+            android:progress="0"
+            android:layout_marginBottom="14dp"/>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <Button
+                android:id="@+id/btnToggleStream"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="START STREAMING"
+                android:backgroundTint="#2E7D32"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="4dp"/>
+
+            <Button
+                android:id="@+id/btnToggleRecord"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="RECORD LOCAL CSV"
+                android:backgroundTint="#C62828"
+                android:textColor="#FFFFFF"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Discovered Oppo A33w Sensors (Check to Enable):"
+            android:textStyle="bold"
+            android:textColor="#263238"
+            android:layout_marginBottom="4dp"/>
+
+        <LinearLayout
+            android:id="@+id/llSensorList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="8dp"/>
+
+        <!-- Log Output -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Live Monitor Log:"
+            android:textStyle="bold"
+            android:textColor="#263238"
+            android:layout_marginTop="12dp"/>
+
+        <TextView
+            android:id="@+id/tvLog"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="#263238"
+            android:textColor="#00E676"
+            android:textSize="11sp"
+            android:fontFamily="monospace"
+            android:padding="8dp"
+            android:scrollbars="vertical"
+            android:layout_marginTop="4dp"/>
+
+    </LinearLayout>
+</ScrollView>
