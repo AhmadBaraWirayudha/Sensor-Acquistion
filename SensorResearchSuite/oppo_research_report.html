@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Oppo A33w Executive Research Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0B1120;
+            color: #F8FAFC;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.5;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header {
+            border-bottom: 2px solid #334155;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 { color: #38BDF8; margin: 0 0 8px 0; }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .stat-box {
+            background: #1E293B;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .stat-val { font-size: 24px; font-weight: bold; color: #4ADE80; margin-top: 6px; }
+        .card {
+            background: #1E293B;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+            font-size: 14px;
+        }
+        th { color: #94A3B8; }
+        .footer {
+            text-align: center;
+            color: #64748B;
+            font-size: 13px;
+            margin-top: 40px;
+            border-top: 1px solid #334155;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Oppo A33w Sensor Acquisition Report</h1>
+            <div style="color: #94A3B8;">Generated on 2026-07-07 08:07:26 | File: <code>sample_oppo_record.csv</code></div>
+        </header>
+
+        <div class="summary-grid">
+            <div class="stat-box">
+                <div style="color:#94A3B8;">Total Samples</div>
+                <div class="stat-val">500</div>
+            </div>
+            <div class="stat-box">
+                <div style="color:#94A3B8;">Acquisition Duration</div>
+                <div class="stat-val">4.99 s</div>
+            </div>
+            <div class="stat-box">
+                <div style="color:#94A3B8;">Effective Sample Rate</div>
+                <div class="stat-val">100.0 Hz</div>
+            </div>
+            <div class="stat-box">
+                <div style="color:#94A3B8;">Active Sensors</div>
+                <div class="stat-val">1 Types</div>
+            </div>
+        </div>
+
+        <h2>Multi-Axis Sensor Diagnostics</h2>
+        
+        <div class="card">
+            <h3>MTK Accelerometer (Type ID: 1) — 500 Samples</h3>
+            <table>
+                <tr><th>Axis</th><th>Min</th><th>Max</th><th>Mean</th><th>RMS Energy</th></tr>
+                <tr><td style="color:#F87171; font-weight:bold;">Axis X</td><td>-2.0000</td><td>2.0000</td><td>0.0000</td><td>1.4142</td></tr>
+                <tr><td style="color:#4ADE80; font-weight:bold;">Axis Y</td><td>9.8000</td><td>9.8000</td><td>9.8000</td><td>9.8000</td></tr>
+                <tr><td style="color:#38BDF8; font-weight:bold;">Axis Z</td><td>0.1000</td><td>0.1000</td><td>0.1000</td><td>0.1000</td></tr>
+            </table>
+            <div style="font-size:12px; color:#94A3B8; margin-top:10px;">Axis X Waveform Overview:</div>
+            <svg width="100%" viewBox="0 0 400 100" style="background:#0F172A; border-radius:6px; margin-top:8px;"><polyline fill="none" stroke="#38BDF8" stroke-width="2" points="0.0,50.0 1.6,25.3 3.2,10.0 4.8,10.0 6.4,25.3 8.0,50.0 9.6,74.7 11.2,90.0 12.9,90.0 14.5,74.7 16.1,50.0 17.7,25.3 19.3,10.0 20.9,10.0 22.5,25.3 24.1,50.0 25.7,74.7 27.3,90.0 28.9,90.0 30.5,74.7 32.1,50.0 33.7,25.3 35.3,10.0 36.9,10.0 38.6,25.3 40.2,50.0 41.8,74.7 43.4,90.0 45.0,90.0 46.6,74.7 48.2,50.0 49.8,25.3 51.4,10.0 53.0,10.0 54.6,25.3 56.2,50.0 57.8,74.7 59.4,90.0 61.0,90.0 62.7,74.7 64.3,50.0 65.9,25.3 67.5,10.0 69.1,10.0 70.7,25.3 72.3,50.0 73.9,74.7 75.5,90.0 77.1,90.0 78.7,74.7 80.3,50.0 81.9,25.3 83.5,10.0 85.1,10.0 86.7,25.3 88.4,50.0 90.0,74.7 91.6,90.0 93.2,90.0 94.8,74.7 96.4,50.0 98.0,25.3 99.6,10.0 101.2,10.0 102.8,25.3 104.4,50.0 106.0,74.7 107.6,90.0 109.2,90.0 110.8,74.7 112.4,50.0 114.1,25.3 115.7,10.0 117.3,10.0 118.9,25.3 120.5,50.0 122.1,74.7 123.7,90.0 125.3,90.0 126.9,74.7 128.5,50.0 130.1,25.3 131.7,10.0 133.3,10.0 134.9,25.3 136.5,50.0 138.2,74.7 139.8,90.0 141.4,90.0 143.0,74.7 144.6,50.0 146.2,25.3 147.8,10.0 149.4,10.0 151.0,25.3 152.6,50.0 154.2,74.7 155.8,90.0 157.4,90.0 159.0,74.7 160.6,50.0 162.2,25.3 163.9,10.0 165.5,10.0 167.1,25.3 168.7,50.0 170.3,74.7 171.9,90.0 173.5,90.0 175.1,74.7 176.7,50.0 178.3,25.3 179.9,10.0 181.5,10.0 183.1,25.3 184.7,50.0 186.3,74.7 188.0,90.0 189.6,90.0 191.2,74.7 192.8,50.0 194.4,25.3 196.0,10.0 197.6,10.0 199.2,25.3 200.8,50.0 202.4,74.7 204.0,90.0 205.6,90.0 207.2,74.7 208.8,50.0 210.4,25.3 212.0,10.0 213.7,10.0 215.3,25.3 216.9,50.0 218.5,74.7 220.1,90.0 221.7,90.0 223.3,74.7 224.9,50.0 226.5,25.3 228.1,10.0 229.7,10.0 231.3,25.3 232.9,50.0 234.5,74.7 236.1,90.0 237.8,90.0 239.4,74.7 241.0,50.0 242.6,25.3 244.2,10.0 245.8,10.0 247.4,25.3 249.0,50.0 250.6,74.7 252.2,90.0 253.8,90.0 255.4,74.7 257.0,50.0 258.6,25.3 260.2,10.0 261.8,10.0 263.5,25.3 265.1,50.0 266.7,74.7 268.3,90.0 269.9,90.0 271.5,74.7 273.1,50.0 274.7,25.3 276.3,10.0 277.9,10.0 279.5,25.3 281.1,50.0 282.7,74.7 284.3,90.0 285.9,90.0 287.6,74.7 289.2,50.0 290.8,25.3 292.4,10.0 294.0,10.0 295.6,25.3 297.2,50.0 298.8,74.7 300.4,90.0 302.0,90.0 303.6,74.7 305.2,50.0 306.8,25.3 308.4,10.0 310.0,10.0 311.6,25.3 313.3,50.0 314.9,74.7 316.5,90.0 318.1,90.0 319.7,74.7 321.3,50.0 322.9,25.3 324.5,10.0 326.1,10.0 327.7,25.3 329.3,50.0 330.9,74.7 332.5,90.0 334.1,90.0 335.7,74.7 337.3,50.0 339.0,25.3 340.6,10.0 342.2,10.0 343.8,25.3 345.4,50.0 347.0,74.7 348.6,90.0 350.2,90.0 351.8,74.7 353.4,50.0 355.0,25.3 356.6,10.0 358.2,10.0 359.8,25.3 361.4,50.0 363.1,74.7 364.7,90.0 366.3,90.0 367.9,74.7 369.5,50.0 371.1,25.3 372.7,10.0 374.3,10.0 375.9,25.3 377.5,50.0 379.1,74.7 380.7,90.0 382.3,90.0 383.9,74.7 385.5,50.0 387.1,25.3 388.8,10.0 390.4,10.0 392.0,25.3 393.6,50.0 395.2,74.7 396.8,90.0 398.4,90.0 400.0,74.7" /></svg>
+        </div>
+        
+
+        <div class="footer">
+            Oppo A33w SensorMax Research Suite — Automated Diagnostic Report Engine
+        </div>
+    </div>
+</body>
+</html>
