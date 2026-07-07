@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Oppo A33w SensorMax Research Dashboard</title>
+    <style>
+        :root {
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #F8FAFC;
+            --accent: #38BDF8;
+            --red: #F87171;
+            --green: #4ADE80;
+            --purple: #C084FC;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        h1 { margin: 0; font-size: 24px; color: var(--accent); }
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background: #2563EB; }
+        button.record { background: #EF4444; }
+        button.record.active { background: #10B981; }
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        .card {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .stat-box {
+            background: #0B1120;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-val { font-size: 20px; font-weight: bold; margin-top: 4px; }
+        canvas {
+            background: #0B1120;
+            border-radius: 6px;
+            width: 100%;
+            height: 300px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+            font-size: 13px;
+        }
+        th { color: #94A3B8; }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            background: #334155;
+        }
+        .status-badge.connected { background: #065F46; color: var(--green); }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Oppo A33w SensorMax Live Research Suite</h1>
+            <span style="color: #94A3B8; font-size: 14px;">High-frequency sensor acquisition, filtering & live CSV export</span>
+        </div>
+        <div>
+            <span id="connStatus" class="status-badge">Simulation Mode Active</span>
+        </div>
+    </header>
+
+    <div class="controls">
+        <button id="btnConnect" onclick="toggleConnection()">Connect WebSocket (localhost:8765)</button>
+        <button id="btnSim" onclick="toggleSimulation()">Toggle Live Simulation</button>
+        <button id="btnRecord" class="record" onclick="toggleRecording()">Start CSV Recording</button>
+        <button onclick="downloadCSV()">Export Recorded CSV</button>
+        <select id="sensorSelect" style="padding: 8px; border-radius: 6px; background: #334155; color: white; border: none;">
+            <option value="1">Accelerometer (m/s²)</option>
+            <option value="4">Gyroscope (rad/s)</option>
+            <option value="2">Magnetometer (µT)</option>
+            <option value="5">Light Sensor (lux)</option>
+            <option value="8">Proximity Sensor (cm)</option>
+        </select>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Real-Time Multi-Axis Waveform</h3>
+            <div class="stats">
+                <div class="stat-box">
+                    <div style="color: var(--red);">Axis X</div>
+                    <div id="valX" class="stat-val">0.00</div>
+                </div>
+                <div class="stat-box">
+                    <div style="color: var(--green);">Axis Y</div>
+                    <div id="valY" class="stat-val">0.00</div>
+                </div>
+                <div class="stat-box">
+                    <div style="color: var(--accent);">Axis Z</div>
+                    <div id="valZ" class="stat-val">0.00</div>
+                </div>
+            </div>
+            <canvas id="plotCanvas" width="800" height="300"></canvas>
+        </div>
+
+        <div class="card">
+            <h3>Acquisition Diagnostics</h3>
+            <div class="stats" style="grid-template-columns: 1fr 1fr;">
+                <div class="stat-box">
+                    <div style="color: #94A3B8;">Sampling Rate</div>
+                    <div id="sampleRate" class="stat-val">0.0 Hz</div>
+                </div>
+                <div class="stat-box">
+                    <div style="color: #94A3B8;">Total Samples</div>
+                    <div id="totalSamples" class="stat-val">0</div>
+                </div>
+            </div>
+            <h4>Active Oppo A33w Sensor List</h4>
+            <table>
+                <thead>
+                    <tr><th>Type</th><th>Sensor Hardware Name</th><th>Last Status</th></tr>
+                </thead>
+                <tbody id="sensorTableBody">
+                    <tr><td>1</td><td>MTK Accelerometer</td><td>Active</td></tr>
+                    <tr><td>4</td><td>MTK Gyroscope</td><td>Active</td></tr>
+                    <tr><td>2</td><td>MTK Magnetometer</td><td>Active</td></tr>
+                    <tr><td>5</td><td>OPPO Light Sensor</td><td>Active</td></tr>
+                    <tr><td>8</td><td>OPPO Proximity Sensor</td><td>Active</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('plotCanvas');
+        const ctx = canvas.getContext('2d');
+        let ws = null;
+        let simInterval = null;
+        let isRecording = false;
+        let recordedRows = [['Timestamp_ms', 'Sensor_Type', 'Sensor_Name', 'ValX', 'ValY', 'ValZ']];
+        let sampleCount = 0;
+        let lastTime = performance.now();
+        let lastCount = 0;
+
+        const buffers = {
+            1: { x: [], y: [], z: [] },
+            4: { x: [], y: [], z: [] },
+            2: { x: [], y: [], z: [] },
+            5: { x: [], y: [], z: [] },
+            8: { x: [], y: [], z: [] }
+        };
+
+        function addSample(ts, type, name, vals) {
+            sampleCount++;
+            if (isRecording) {
+                recordedRows.push([ts, type, `"${name}"`, vals[0]||0, vals[1]||0, vals[2]||0]);
+            }
+            if (!buffers[type]) buffers[type] = { x: [], y: [], z: [] };
+            const b = buffers[type];
+            b.x.push(vals[0] || 0);
+            b.y.push(vals[1] || 0);
+            b.z.push(vals[2] || 0);
+            if (b.x.length > 150) {
+                b.x.shift(); b.y.shift(); b.z.shift();
+            }
+
+            const sel = parseInt(document.getElementById('sensorSelect').value);
+            if (type === sel) {
+                document.getElementById('valX').textContent = (vals[0] || 0).toFixed(2);
+                document.getElementById('valY').textContent = (vals[1] || 0).toFixed(2);
+                document.getElementById('valZ').textContent = (vals[2] || 0).toFixed(2);
+            }
+        }
+
+        function drawChart() {
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            ctx.strokeStyle = '#1E293B';
+            for (let y = 0; y < h; y += 40) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+            ctx.strokeStyle = '#334155';
+            ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+
+            const sel = parseInt(document.getElementById('sensorSelect').value);
+            const b = buffers[sel];
+            if (!b || b.x.length < 2) return;
+
+            const all = [...b.x, ...b.y, ...b.z];
+            const minV = Math.min(...all);
+            const maxV = Math.max(...all);
+            const span = Math.max(maxV - minV, 2);
+            const scaleY = (h * 0.7) / span;
+            const midV = (maxV + minV) / 2;
+            const stepX = w / (b.x.length - 1);
+
+            function drawLine(arr, color) {
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                arr.forEach((v, i) => {
+                    const px = i * stepX;
+                    const py = h/2 - (v - midV) * scaleY;
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                });
+                ctx.stroke();
+            }
+
+            drawLine(b.x, '#F87171');
+            drawLine(b.y, '#4ADE80');
+            drawLine(b.z, '#38BDF8');
+
+            requestAnimationFrame(drawChart);
+        }
+
+        setInterval(() => {
+            const now = performance.now();
+            const dt = (now - lastTime) / 1000;
+            if (dt >= 1) {
+                const hz = ((sampleCount - lastCount) / dt).toFixed(1);
+                document.getElementById('sampleRate').textContent = hz + ' Hz';
+                document.getElementById('totalSamples').textContent = sampleCount;
+                lastTime = now;
+                lastCount = sampleCount;
+            }
+        }, 1000);
+
+        function toggleSimulation() {
+            if (simInterval) {
+                clearInterval(simInterval);
+                simInterval = null;
+                document.getElementById('btnSim').textContent = "Start Simulation";
+            } else {
+                let t = 0;
+                simInterval = setInterval(() => {
+                    t += 0.05;
+                    // Simulate Accelerometer
+                    addSample(Date.now(), 1, "MTK Accelerometer", [
+                        Math.sin(t*3) * 2 + (Math.random()-0.5)*0.2,
+                        Math.cos(t*2) * 2 + 9.8 + (Math.random()-0.5)*0.2,
+                        Math.sin(t*5) * 1.5 + (Math.random()-0.5)*0.2
+                    ]);
+                    // Simulate Gyroscope
+                    addSample(Date.now(), 4, "MTK Gyroscope", [
+                        Math.cos(t*4) * 0.5, Math.sin(t*4) * 0.5, Math.sin(t*2)*0.2
+                    ]);
+                }, 20); // 50 Hz simulation
+                document.getElementById('btnSim').textContent = "Stop Simulation";
+            }
+        }
+
+        function toggleConnection() {
+            if (ws) {
+                ws.close(); ws = null;
+                document.getElementById('btnConnect').textContent = "Connect WebSocket (localhost:8765)";
+                document.getElementById('connStatus').className = "status-badge";
+                document.getElementById('connStatus').textContent = "Disconnected";
+                return;
+            }
+            ws = new WebSocket("ws://localhost:8765");
+            ws.onopen = () => {
+                document.getElementById('btnConnect').textContent = "Disconnect WebSocket";
+                document.getElementById('connStatus').className = "status-badge connected";
+                document.getElementById('connStatus').textContent = "Live Stream Connected";
+            };
+            ws.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    addSample(data.ts, data.type, data.name, data.vals);
+                } catch(err) {}
+            };
+            ws.onclose = () => {
+                ws = null;
+                document.getElementById('connStatus').className = "status-badge";
+                document.getElementById('connStatus').textContent = "Disconnected";
+            };
+        }
+
+        function toggleRecording() {
+            const btn = document.getElementById('btnRecord');
+            isRecording = !isRecording;
+            if (isRecording) {
+                btn.textContent = "Recording CSV... (Click to Stop)";
+                btn.className = "record active";
+            } else {
+                btn.textContent = "Start CSV Recording";
+                btn.className = "record";
+            }
+        }
+
+        function downloadCSV() {
+            let csvContent = "data:text/csv;charset=utf-8," + recordedRows.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `OppoA33w_ResearchData_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Start simulation by default so user sees immediate visual output
+        toggleSimulation();
+        requestAnimationFrame(drawChart);
+    </script>
+</body>
+</html>

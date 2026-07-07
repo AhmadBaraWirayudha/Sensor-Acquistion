@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Oppo A33w Real-Time 3D Orientation Visualizer</title>
+    <style>
+        :root {
+            --bg: #0B1120;
+            --panel: #1E293B;
+            --text: #F8FAFC;
+            --accent: #38BDF8;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        h1 { margin: 0; font-size: 22px; color: var(--accent); }
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { background: #2563EB; }
+        .viewport {
+            background: #0F172A;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        canvas { display: block; border-radius: 10px; }
+        .angles-overlay {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .angle-row { margin: 4px 0; }
+        .status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: #334155;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .connected { background: #065F46; color: #4ADE80; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Oppo A33w 3D Digital Twin & AHRS Viewer</h1>
+            <span style="color: #94A3B8; font-size: 14px;">Real-Time Roll, Pitch & Yaw Visualization</span>
+        </div>
+        <div>
+            <span id="connStatus" class="status">Simulation Mode Active</span>
+        </div>
+    </header>
+
+    <div class="controls">
+        <button id="btnConnect" onclick="toggleWS()">Connect WebSocket (localhost:8765)</button>
+        <button id="btnSim" onclick="toggleSim()">Toggle Live Simulation</button>
+        <button onclick="resetOrientation()">Reset Zero Orientation</button>
+    </div>
+
+    <div class="viewport">
+        <canvas id="viewCanvas" width="800" height="500"></canvas>
+        <div class="angles-overlay">
+            <div class="angle-row" style="color: #F87171;">ROLL  (X): <span id="valRoll">0.0°</span></div>
+            <div class="angle-row" style="color: #4ADE80;">PITCH (Y): <span id="valPitch">0.0°</span></div>
+            <div class="angle-row" style="color: #38BDF8;">YAW   (Z): <span id="valYaw">0.0°</span></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('viewCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let roll = 0.0, pitch = 0.0, yaw = 0.0;
+        let ws = null;
+        let simInterval = null;
+
+        // 3D Box vertices defining Oppo A33w chassis (width: 71.7mm, height: 142.7mm, thickness: 7.55mm)
+        // Scaled for visualization
+        const w = 1.0, h = 2.0, d = 0.15;
+        const rawVertices = [
+            [-w, -h, -d], [ w, -h, -d], [ w,  h, -d], [-w,  h, -d], // Back face 0..3
+            [-w, -h,  d], [ w, -h,  d], [ w,  h,  d], [-w,  h,  d]  // Front face 4..7
+        ];
+
+        const faces = [
+            { idx: [4, 5, 6, 7], color: '#1E293B', border: '#38BDF8', label: 'OPPO A33w Screen' }, // Front
+            { idx: [0, 3, 2, 1], color: '#0F172A', border: '#475569', label: 'Mirror Back' },      // Back
+            { idx: [0, 1, 5, 4], color: '#334155', border: '#64748B' }, // Top
+            { idx: [2, 3, 7, 6], color: '#334155', border: '#64748B' }, // Bottom
+            { idx: [0, 4, 7, 3], color: '#475569', border: '#94A3B8' }, // Left
+            { idx: [1, 2, 6, 5], color: '#475569', border: '#94A3B8' }  // Right
+        ];
+
+        function rotate3D(v, r, p, y) {
+            // Euler rotation order Z-Y-X
+            let cr = Math.cos(r), sr = Math.sin(r);
+            let cp = Math.cos(p), sp = Math.sin(p);
+            let cy = Math.cos(y), sy = Math.sin(y);
+
+            let x = v[0], y0 = v[1], z0 = v[2];
+
+            // Rotate around X (Roll)
+            let y1 = y0 * cr - z0 * sr;
+            let z1 = y0 * sr + z0 * cr;
+
+            // Rotate around Y (Pitch)
+            let x2 = x * cp + z1 * sp;
+            let z2 = -x * sp + z1 * cp;
+
+            // Rotate around Z (Yaw)
+            let x3 = x2 * cy - y1 * sy;
+            let y3 = x2 * sy + y1 * cy;
+
+            return [x3, y3, z2];
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const scale = 110;
+
+            const rRad = roll * Math.PI / 180;
+            const pRad = pitch * Math.PI / 180;
+            const yRad = yaw * Math.PI / 180;
+
+            const rotated = rawVertices.map(v => rotate3D(v, rRad, pRad, yRad));
+
+            // Project to 2D screen with depth sorting
+            const projected = rotated.map(v => {
+                const perspective = 5.0 / (5.0 - v[2]);
+                return [cx + v[0] * scale * perspective, cy + v[1] * scale * perspective, v[2]];
+            });
+
+            // Sort faces by average Z coordinate back-to-front
+            const sortedFaces = faces.map(f => {
+                const avgZ = f.idx.reduce((sum, i) => sum + rotated[i][2], 0) / 4;
+                return { ...f, avgZ };
+            }).sort((a, b) => a.avgZ - b.avgZ);
+
+            sortedFaces.forEach(f => {
+                ctx.beginPath();
+                f.idx.forEach((idx, i) => {
+                    const [px, py] = projected[idx];
+                    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                });
+                ctx.closePath();
+                ctx.fillStyle = f.color;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = f.border;
+                ctx.stroke();
+
+                if (f.label && f.avgZ > -0.2) {
+                    const avgX = f.idx.reduce((sum, i) => sum + projected[i][0], 0) / 4;
+                    const avgY = f.idx.reduce((sum, i) => sum + projected[i][1], 0) / 4;
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = 'bold 14px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(f.label, avgX, avgY);
+                }
+            });
+
+            document.getElementById('valRoll').textContent = roll.toFixed(1) + '°';
+            document.getElementById('valPitch').textContent = pitch.toFixed(1) + '°';
+            document.getElementById('valYaw').textContent = yaw.toFixed(1) + '°';
+
+            requestAnimationFrame(render);
+        }
+
+        function toggleSim() {
+            if (simInterval) {
+                clearInterval(simInterval);
+                simInterval = null;
+                document.getElementById('btnSim').textContent = "Start Simulation";
+            } else {
+                let t = 0;
+                simInterval = setInterval(() => {
+                    t += 0.03;
+                    roll = Math.sin(t * 1.5) * 35;
+                    pitch = Math.cos(t * 1.0) * 25;
+                    yaw = (t * 20) % 360;
+                }, 20);
+                document.getElementById('btnSim').textContent = "Stop Simulation";
+            }
+        }
+
+        function toggleWS() {
+            if (ws) {
+                ws.close(); ws = null;
+                document.getElementById('btnConnect').textContent = "Connect WebSocket";
+                document.getElementById('connStatus').className = "status";
+                document.getElementById('connStatus').textContent = "Disconnected";
+                return;
+            }
+            ws = new WebSocket("ws://localhost:8765");
+            ws.onopen = () => {
+                document.getElementById('btnConnect').textContent = "Disconnect WebSocket";
+                document.getElementById('connStatus').className = "status connected";
+                document.getElementById('connStatus').textContent = "Live AHRS Connected";
+                if (simInterval) toggleSim();
+            };
+            ws.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    // If AHRS packet or Accelerometer tilt approx
+                    if (data.type === 1 && data.vals.length >= 3) {
+                        const ax = data.vals[0], ay = data.vals[1], az = data.vals[2];
+                        roll = Math.atan2(ay, az) * 180 / Math.PI;
+                        pitch = Math.atan2(-ax, Math.sqrt(ay*ay + az*az)) * 180 / Math.PI;
+                    }
+                } catch(err) {}
+            };
+        }
+
+        function resetOrientation() { roll = 0; pitch = 0; yaw = 0; }
+
+        toggleSim();
+        requestAnimationFrame(render);
+    </script>
+</body>
+</html>

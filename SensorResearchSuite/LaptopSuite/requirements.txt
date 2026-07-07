@@ -1,0 +1,6 @@
+# Python requirements for Oppo A33w SensorMax Laptop Suite
+numpy>=1.21.0
+matplotlib>=3.5.0
+pyserial>=3.5
+websockets>=10.4
+aiohttp>=3.8.0
